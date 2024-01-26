@@ -1,0 +1,54 @@
+% [xhatnc,xhatc,xhatfir,numnc,dennc,numc,denc,thetahatfir] = 
+%     est_add(x, v, N, Ahat, sigma2hat, Anoisehat,
+%       sigma2noisehat,SigmaYxhat, SigmaYYhat)
+%	
+%	x			 - AR Signal
+%	v			 - AR Noise, y(n)=x(n)+v(n)
+%	N			 - Length of the FIR Wiener filter
+%	Ahat,sigma2hat 		 - Estimated or true parameters of x
+%	Anoisehat,sigma2noisehat - Estimated or true parameters of v
+%	SigmaYxhat		 - E[Y(n) x(n)]
+% 	SigmaYYhat		 - E[Y(n) (Y(n))']
+%	
+% 	xhatnc		- Non-causal Wiener estimate of x
+% 	xhatc		- Causal Wiener estimate of x
+% 	xhatfir		- FIR Wiener estimate of x
+% 	numnc,dennc	- Non-causal Wiener filter
+% 	numc,denc	- Causal Wiener filter
+% 	thetahatfir	- FIR Wiener filter
+%	
+%
+%  est_add: Estimate using the three different Wiener filters.
+%     Plot the 30 first samples of each estimate, x and y.
+%     Calculate the MSE of the estimates normalized with the
+%     inverse of the noise variance.
+%     
+%     Author: Ziyue Yang
+%     Date: 2024.01.23
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [xhatnc,xhatc,xhatfir,numnc,dennc,numc,denc,thetahatfir] =...
+    est_add(x, v, N, Ahat, sigma2hat, Anoisehat,sigma2noisehat,SigmaYxhat, SigmaYYhat)
+
+%     calc y
+    y = x + v;
+
+%     calc the estimation and coefficients of FIR
+%     since N is the filter length, we know ideally N = (# of rows in SigmaYxhat) =
+%     (# of rows or # of columns in SigmaYYhat). If the size of 
+%     provided SigmaYxhat or SigmaYYhat is larger than N (possible), 
+%     we should only use a part of them
+%%  The below 1 line may be wrong, has not been testified.
+    [xhatfir,thetahatfir] = firw(y, SigmaYxhat(1:N), SigmaYYhat(1:N,1:N));
+
+%     calc the estimation and polynomial of non causal Wiener
+    [PhixyNum,PhixyDen,PhiyyNum,PhiyyDen] = spec_add(Ahat, sigma2hat, Anoisehat, sigma2noisehat);
+    [xhatnc,numnc,dennc] = ncw(y, PhixyNum, PhixyDen, PhiyyNum, PhiyyDen);
+
+%     calc the estimation and polynomial of causal Wiener
+%     m = 0, Filtering; m > 0, Predicting; m < 0, Smoothing.
+    m = 0;
+    [xhatc,numc,denc] = cw(y, PhixyNum, PhixyDen, PhiyyNum, PhiyyDen, m);
+
+end
