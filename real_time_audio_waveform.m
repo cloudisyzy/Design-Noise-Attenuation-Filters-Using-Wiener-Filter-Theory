@@ -16,7 +16,7 @@ ylabel('Amplitude');
 title('Real-time Audio Waveform');
 
 % Set batch size for processing
-batchSize = 1000; % Adjust as needed
+batchSize = 100; % Adjust as needed
 
 % Play the audio
 sound(signal, Fs);
@@ -31,5 +31,5 @@ for i = 1:batchSize:length(signal)
     drawnow;
     
     % Ensure update rate is synchronized with audio playback
-    pause(dt * batchSize);
+    pause(dt * 0.79 * batchSize);
 end
