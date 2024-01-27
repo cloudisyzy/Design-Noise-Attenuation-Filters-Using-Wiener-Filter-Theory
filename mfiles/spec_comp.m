@@ -26,10 +26,15 @@ w=linspace(0,pi);
 [magnc,phasenc,wnc]=dbode(numnc,dennc,1,w);
 [magc,phasec,wc]=dbode(numc,denc,1,w);
 [magfir,phasefir,wfir]=dbode(thetahatfir',1,1,w);
+ws = ws/pi*0.5;
+wv = wv/pi*0.5;
+wnc = wnc/pi*0.5;
+wc = wc/pi*0.5;
+wfir = wfir/pi*0.5;
 semilogy(ws,mags.^2*sigma2,'b',wv,magv.^2*sigma2noise,':k', ...
 	 wnc,magnc.^2,'-.r',wc,magc.^2,'--g',wfir,magfir.^2,'-m')
 legend('Signal','Noise','Non-Causal Filter','Causal Filter',['FIR(' int2str(N) ') Filter '])
 title('Spectra')
-xlabel('Frequency (rad/s)')
+xlabel('Normalized Frequency \nu')
 ylabel('Magnitude')
 
