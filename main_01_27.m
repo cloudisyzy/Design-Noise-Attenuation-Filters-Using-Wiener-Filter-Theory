@@ -1,40 +1,48 @@
-clear
-addpath('mfiles\')
-addpath('skel\')
-addpath('utils\')
+clear; clc; addpath('mfiles\'); addpath('skel\'); addpath('utils\')
+% close all
 
-% y <=> noisy speech; x <=> clean speech; v <=> additive noise
+%% Adjustable Parameters, the Orders of AR Models that Fits x, y, v, where
+% y <=> noisy speech; x <=> clean speech; v <=> additive noise; z <=> whole audio
 % y = x + v
 % z = [y,v,y,v,...]
+
+N_v = 11; % AR order for v, 19 by visual inspection; 11 by MSE
+N_y = 17; % AR order for y, 30 by visual inspection; 17 by MSE
+N_x = N_y; % AR order for x
+
+n_fir = 30; % Length of FIR Wiener filter
+
+%% Load Signal and Divide into Noise and Noisy Speech
+
 [z,fs] = audioread('EQ2401project1data2024.wav');
 % Extract noisy speech samples 
-y = z([4860:18780 26660:41212 51340:end]); % y = z([4501:18999 26001:41999 51001:end]);
+speech_index = [4860:18780 26660:41212 51340:70001];
+y = z(speech_index); % or y = z([4501:18999 26001:41999 51001:end]);
 % soundsc(y, fs)
 % Extract pure noise samples 
-v = z([1:4700, 18900:26500, 41450:51000]); % v = z([1:4500, 19000:26000, 42000:51000]);
+noise_index = [1:4700, 18900:26500, 41450:51000];
+v = z(noise_index); % or v = z([1:4500, 19000:26000, 42000:51000]);
 % soundsc(v, fs)
 % Estimated speech samples 
-x = y - [v; v; v(1:length(y)-2 * length(v))];
+% x = y - [v; v; v(1:length(y)-2 * length(v))];
 
-N_v = 11; % 19 by visual inspection; 11 by computation
-N_y = 17; % 30 by visual inspection; 17 by computation
-N_x = N_y;
+%% Compute auto-correlations (acf)
 
-%% Compute auto-correlations
-
-L = 100;
+L = 100; % L is the max index of autocorrelation.
 r_yy = xcovhat(y, y, L);
 r_vv = xcovhat(v, v, L);
-r_xx = r_yy - r_vv;
+r_xx = r_yy - r_vv; % property of acf, since we regard x and v are independent.
 r_yx = r_xx;
 R_yy = covhat(y, L);
 
-%% Spectrum Estimation
+%% Compute Spectrum
 
-[A_v, sigma2_v] = levinson(r_vv, N_v);
+% Levinson-Durbin recursion is to solve Yule-Walker equations, where the coeffs and variance of a AR model can be computed
+[A_v, sigma2_v] = levinson(r_vv, N_v); 
 % [A_v, sigma2_v] = ar_id(v, N_v);
+
 [A_x, sigma2_x] = levinson(r_xx, N_x);
-% [A_x, sigma2_x] = ar_id(x, N_x);
+
 [A_y, sigma2_y] = levinson(r_yy, N_y);
 % [A_y, sigma2_y] = ar_id(y, N_y);
 
@@ -42,7 +50,6 @@ R_yy = covhat(y, L);
 
 %% FIR
 
-n_fir = 30;
 SigmaYy = r_yy(1:n_fir);
 SigmaVv = r_vv(1:n_fir);
 SigmaXx = SigmaYy - SigmaVv;
@@ -57,20 +64,40 @@ SigmaYY = R_yy(1:n_fir, 1:n_fir);
 
 %% Causal
 
-% m=0, filtering
-m = 0;
+m = 0; % filtering
 [xhatc, numc, denc] = cw(z, PhixyNum, PhixyDen, PhiyyNum, PhiyyDen, m);
 
-%% Plots
+%% Plots and Commander Outputs
 
-figure;
+figure; % Plot Time Domain Signal Waveforms
+sgtitle('Time Domain Signal Waveforms', 'FontSize', 14);
+subplot(2,2,1)
+plot(0:length(z)-1, z)
+title('Original Signal'); axis tight
+subplot(2,2,2)
+plot(0:length(xhatfir)-1, xhatfir); axis tight
+title('FIR')
+subplot(2,2,3)
+plot(0:length(xhatnc)-1, xhatnc); axis tight
+title('Non-Causal')
+subplot(2,2,4)
+plot(0:length(xhatc)-1, xhatc); axis tight
+title('Causal')
+
+% Print Noise Statistics Comparison
+fprintf('original noise mean: %f; original noise var: %f\n', mean(z(noise_index)), var(z(noise_index)));
+fprintf('noise mean after FIR: %f; noise var after FIR: %f\n', mean(xhatfir(noise_index)), var(xhatfir(noise_index)));
+fprintf('noise mean after Non-Causal: %f; noise var after Non-Causal: %f\n', mean(xhatnc(noise_index)), var(xhatnc(noise_index)));
+fprintf('noise mean after Causal: %f; noise var after Causal: %f\n', mean(xhatc(noise_index)), var(xhatc(noise_index)));
+
+figure; % Spectrum Comparison
 spec_comp(A_x, sigma2_x, A_v, sigma2_v, numnc, dennc, numc, denc, thetahatfir);
 
-figure;
-t_c = [0:30]';
+figure; % Plot impulse response, similar to exercise 3.7
+t_c = (0:30)';
 s_c = (t_c==0);
 h_c = filter(numc, denc, s_c);
-t_nc = [-30:30]';
+t_nc = (-30:30)';
 s_nc = (t_nc==0);
 h_nc = ncfilt(numnc, dennc, s_nc);
 stem(0:length(thetahatfir)-1, thetahatfir, "+", LineWidth=2)
@@ -86,38 +113,36 @@ legend('FIR', 'Causal', 'Non-Causal')
 figure;
 [~,~,~] = Spectra_AR(A_v, sigma2_v, 'half', 1);hold on
 [~,~] = Spectra_Est(v, 'half', 1);
-title('Noise Order Estimation via Plot')
-xlabel('Normalized Frequency \nu, unit:Hz')
-ylabel('Power Spectrum, unit:dB')
+title('Noise Order Estimation via Power Spectrum')
+xlabel('Normalized Frequency \nu')
+ylabel('Magnitude')
 legend(sprintf('PSD of AR-%d', N_v), 'Estimated Spectrum of Noise'); hold off
 
 figure;
 [~,~,~] = Spectra_AR(A_y, sigma2_y, 'half', 1); hold on
 [~,~] = Spectra_Est(y, 'half', 1);
-title('Noisy Speech Order Estimation via Plot')
-xlabel('Normalized Frequency \nu, unit:Hz')
-ylabel('Power Spectrum, unit:dB')
+title('Noisy Speech Order Estimation via Power Spectrum')
+xlabel('Normalized Frequency \nu')
+ylabel('Magnitude')
 legend(sprintf('PSD of AR-%d', N_y), 'Estimated Spectrum of Noisy Speech'); hold off
 
-% % the correctness of the below estimation need to be testified
-% figure;
-% [~,~,~] = Spectra_AR(A_x, sigma2_x, 'half', 1); hold on
-% [~,~] = Spectra_Est(x, 'half', 1);
-% title('Speech Order Estimation via Plot')
-% xlabel('Normalized Frequency \nu, unit:Hz')
-% ylabel('Power Spectrum, unit:dB')
-% legend(sprintf('PSD of AR-%d', N_x), 'Estimated Spectrum of Speech'); hold off
+figure;
+[~,~,~] = Spectra_AR(A_x, sigma2_x, 'half', 1);
+title('Estimated Speech PSD')
+xlabel('Normalized Frequency \nu')
+ylabel('Magnitude')
+legend(sprintf('PSD of AR-%d', N_x))
 
 %% Play Sound
 
-delta_t = length(z)/fs + 0.5;
-soundsc(z, fs)
-pause(delta_t)
-soundsc(xhatfir, fs)
-pause(delta_t)
-soundsc(xhatnc, fs)
-pause(delta_t)
-soundsc(xhatc, fs)
+% delta_t = length(z)/fs + 0.5;
+% soundsc(z, fs)
+% pause(delta_t)
+% soundsc(xhatfir, fs)
+% pause(delta_t)
+% soundsc(xhatnc, fs)
+% pause(delta_t)
+% soundsc(xhatc, fs)
 
 %% Save Audio Files
 
