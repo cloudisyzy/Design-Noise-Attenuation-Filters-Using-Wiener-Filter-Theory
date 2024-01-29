@@ -28,7 +28,7 @@ v = z(noise_index); % or v = z([1:4500, 19000:26000, 42000:51000]);
 
 %% Compute auto-correlations (acf)
 
-L = 100; % L is the max index of autocorrelation.
+L = 100; % L is the max index of auto-covariance(correlation).
 r_yy = xcovhat(y, y, L);
 r_vv = xcovhat(v, v, L);
 r_xx = r_yy - r_vv; % property of acf, since we regard x and v are independent.
@@ -37,14 +37,17 @@ R_yy = covhat(y, L);
 
 %% Compute Spectrum
 
-% Levinson-Durbin recursion is to solve Yule-Walker equations, where the coeffs and variance of a AR model can be computed
-[A_v, sigma2_v] = levinson(r_vv, N_v); 
-% [A_v, sigma2_v] = ar_id(v, N_v);
+% Regard y,x,v as AR processes. The params for y and v can be estimated
+% using ar_id in computer exercises
+[A_v, sigma2_v] = ar_id(v, N_v);
+[A_y, sigma2_y] = ar_id(y, N_y);
 
+% For x, we do not have the accurate estimate of its values. Instead, we
+% have its auto-covariance(correlation).
+% levinson, Levinson-Durbin recursion is to solve Yule-Walker equations, 
+% where the coeffs and variance of a AR model can be computed based on its
+% order and acf matrix.
 [A_x, sigma2_x] = levinson(r_xx, N_x);
-
-[A_y, sigma2_y] = levinson(r_yy, N_y);
-% [A_y, sigma2_y] = ar_id(y, N_y);
 
 [PhixyNum,PhixyDen,PhiyyNum,PhiyyDen] = spec_add(A_x, sigma2_x, A_v, sigma2_v);
 
