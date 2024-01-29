@@ -26,7 +26,7 @@ v = z(noise_index); % or v = z([1:4500, 19000:26000, 42000:51000]);
 % Estimated speech samples 
 % x = y - [v; v; v(1:length(y)-2 * length(v))];
 
-%% Compute auto-correlations (acf)
+%% Compute Auto-Covariances
 
 L = 100; % L is the max index of auto-covariance(correlation).
 r_yy = xcovhat(y, y, L);
@@ -38,11 +38,11 @@ R_yy = covhat(y, L);
 %% Compute Spectrum
 
 % Regard y,x,v as AR processes. The params for y and v can be estimated
-% using ar_id in computer exercises
+% using ar_id (Least Square Method) in computer exercises
 [A_v, sigma2_v] = ar_id(v, N_v);
 [A_y, sigma2_y] = ar_id(y, N_y);
 
-% For x, we do not have the accurate estimate of its values. Instead, we
+% For x, which we want to estimate, so do not have its accurate values. Instead, we
 % have its auto-covariance(correlation).
 % levinson, Levinson-Durbin recursion is to solve Yule-Walker equations, 
 % where the coeffs and variance of a AR model can be computed based on its
