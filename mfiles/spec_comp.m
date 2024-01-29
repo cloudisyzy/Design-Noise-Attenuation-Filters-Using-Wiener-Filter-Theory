@@ -32,9 +32,9 @@ wnc = wnc/pi*0.5;
 wc = wc/pi*0.5;
 wfir = wfir/pi*0.5;
 semilogy(ws,mags.^2*sigma2,'b',wv,magv.^2*sigma2noise,':k', ...
-	 wnc,magnc.^2,'-.r',wc,magc.^2,'--g',wfir,magfir.^2,'-m')
-legend('Signal','Noise','Non-Causal Filter','Causal Filter',['FIR(' int2str(N) ') Filter '])
-title('Spectra')
+	 wnc,magnc.^2,'-.r',wc,magc.^2,'--g',wfir,magfir.^2,'-m', 'LineWidth',1.5)
+legend('Speech','Noise','Non-Causal Filter','Causal Filter',['FIR(' int2str(N) ') Filter '])
+title('Power Spectrum Density')
 xlabel('Normalized Frequency \nu')
 ylabel('Magnitude')
 
