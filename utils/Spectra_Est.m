@@ -22,7 +22,7 @@ function [pxx, f] = Spectra_Est(x, Option, plotFlag)
     end
 
     if plotFlag
-        semilogy(f, pxx, 'r')
+        semilogy(f, pxx, 'LineWidth',1.5)
     end
 
 end

@@ -1,4 +1,4 @@
-clear; clc; addpath('mfiles\'); addpath('skel\'); addpath('utils\')
+clear; addpath('mfiles\'); addpath('skel\'); addpath('utils\')
 % close all
 
 %% Adjustable Parameters, the Orders of AR Models that Fits x, y, v, where

@@ -26,7 +26,7 @@ function [p_AR, H_AR, f] = Spectra_AR(A, sigma2, Option, plotFlag)
     end
     
     if plotFlag
-        semilogy(f, p_AR, 'b--')   
+        semilogy(f, p_AR, 'b--', 'LineWidth',1.5)   
     end
 
 end
