@@ -153,16 +153,16 @@ xlabel('Normalized Frequency \nu')
 ylabel('Magnitude')
 legend(sprintf('PSD of AR-%d', N_x))
 
-%% Play Sound
+%% Play Sound, the order of sound: Original, FIR, Non-Causal, Causal
 
-% delta_t = length(z)/fs + 0.5;
-% soundsc(z, fs)
-% pause(delta_t)
-% soundsc(xhatfir, fs)
-% pause(delta_t)
-% soundsc(xhatnc, fs)
-% pause(delta_t)
-% soundsc(xhatc, fs)
+delta_t = length(z)/fs + 0.5;
+soundsc(z, fs)
+pause(delta_t)
+soundsc(xhatfir, fs)
+pause(delta_t)
+soundsc(xhatnc, fs)
+pause(delta_t)
+soundsc(xhatc, fs)
 
 %% Save Audio Files
 
