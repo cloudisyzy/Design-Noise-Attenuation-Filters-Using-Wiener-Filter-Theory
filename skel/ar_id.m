@@ -24,7 +24,7 @@ function [Ahat, sigma2hat] = ar_id(y, N)
     SigmaYx = xcovhat(y(2:end), y, N);
     [xhat, theta] = firw(y, SigmaYx, SigmaYY);
 
-%     Ahat = Ahat=[1, aˆ1, aˆ2, . . ., aˆN ]
+%     Ahat = Ahat=[1, aˆ1, aˆ2, . . ., aˆN ], page98 in lecnotes
     Ahat = [1, -theta'];
     
 %     y(n) , page.25, first N samples are abandoned since we use N history samples
