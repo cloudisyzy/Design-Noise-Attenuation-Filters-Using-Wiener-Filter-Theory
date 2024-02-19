@@ -99,12 +99,10 @@ title('Causal')
 
 figure; % Plot PSDs estimated by Welch method
 psd_comp(z,xhatfir,xhatnc,xhatc)
-hold on
-[~,~,~] = Spectra_AR(A_x, sigma2_x, 'half', 1);
 title('Estimated PSDs for Original/Denoised Signals')
 xlabel('Normalized Frequency \nu')
 ylabel('Magnitude')
-legend('Original Signal',sprintf('Denoised by FIR(%d)', n_fir),'Denoised by Non-Causal','Denoised by Causal','Estimated Clean Speech')
+legend('Original Signal',sprintf('FIR(%d)', n_fir),'Non-Causal','Causal')
 
 % % Print Noise Statistics Comparison
 % fprintf('original noise mean: %f; original noise var: %f\n', mean(z(noise_index)), var(z(noise_index)));
@@ -168,7 +166,12 @@ soundsc(xhatc, fs)
 
 %% Save Audio Files
 
-% audiowrite('results\fir.wav', xhatfir, fs);
-% audiowrite('results\nc.wav', xhatnc, fs);
-% audiowrite('results\c.wav', xhatc, fs);
-% audiowrite('results\EQ2401project1data2024.wav', z, fs);
+% audiowrite('results\fir_x=order_y.wav', xhatfir, fs);
+% audiowrite('results\nc_x=order_y.wav', xhatnc, fs);
+% audiowrite('results\c_x=order_y.wav', xhatc, fs);
+% audiowrite('results\_origin_modi.wav', z, fs);
+
+% pause_data = zeros(10000, 1);
+% blind_test = [xhatc; pause_data; z; pause_data; xhatfir; pause_data; xhatnc]; % mse
+% blind_test = [xhatnc; pause_data; xhatfir; pause_data; z; pause_data; xhatc]; % visual
+% audiowrite('results\blind_test_visual.wav', blind_test, fs);
