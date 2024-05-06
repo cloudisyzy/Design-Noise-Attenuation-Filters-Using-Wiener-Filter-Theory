@@ -21,8 +21,11 @@ function [pxx, f] = Spectra_Est(x, Option, plotFlag)
         pxx = pxx(1:halfN);
     end
 
+%     pxx = 10*log10(pxx);
+
     if plotFlag
         semilogy(f, pxx, 'LineWidth',1.5)
+%         plot(f, pxx, 'LineWidth',1.5)
     end
 
 end

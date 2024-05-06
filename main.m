@@ -15,7 +15,7 @@ n_fir = 30; % Length of FIR Wiener filter
 
 %% Load Signal and Divide into Noise and Noisy Speech
 
-[z,fs] = audioread('EQ2401project1data2024.wav');
+[z,fs] = audioread('projectdata.wav');
 % Extract noisy speech samples 
 speech_index = [4860:18780 26660:41212 51340:70001];
 y = z(speech_index); % or y = z([4500:19000 26000:42000 51000:end]);
